@@ -48,13 +48,36 @@ body {
     display: none;
     flex-direction: column;
     padding: 20px;
-    padding-bottom: 80px;
-    /* ナビ分 */
+    padding-bottom: 120px;
+    /* ナビゲーションとかぶらないように余白を増やす */
     animation: fadeIn 0.3s ease-in-out;
+    min-height: 100vh;
+    /* スクロールできるように高さを確保 */
 }
 
 .screen.active {
     display: flex;
+}
+
+/* Bottom Nav */
+.bottom-nav {
+    display: flex;
+    justify-content: space-around;
+    padding: 15px;
+    background: var(--card-bg);
+    border-top: 1px solid #ebebeb;
+    /* iPhoneのホームバーエリアを考慮 */
+    padding-bottom: max(15px, env(safe-area-inset-bottom));
+    padding-bottom: max(15px, constant(safe-area-inset-bottom));
+    /* 古いiOS対応 */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    /* 念のため */
+    width: 100%;
+    /* max-width: 600px;  画面いっぱいに広げる方が安全 */
+    z-index: 100;
+    /* 最前面に */
 }
 
 @keyframes fadeIn {
