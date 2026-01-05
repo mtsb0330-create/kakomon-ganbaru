@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>看護入試パス</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>看護入試パス</h1>
+        <a onclick="app.showScreen('screen-admin')" class="admin-btn">管理者</a>
+    </header>
+
+    <div class="app-container">
+        <!-- Home -->
+        <div id="screen-home" class="screen active">
+            <div class="home-menu">
+                <div class="menu-card" onclick="app.startQuiz('random')">
+                    <span class="menu-icon">📱</span>
+                    <div class="menu-title">ランダム学習</div>
+                    <div class="menu-desc">全問からランダムに出題</div>
+                </div>
+                <div class="menu-card" onclick="app.startQuiz('wrong')">
+                    <span class="menu-icon">📦</span>
+                    <div class="menu-title">間違いBOX</div>
+                    <div class="menu-desc">苦手な問題を重点復習</div>
+                </div>
+                <div class="menu-card" onclick="app.startMiniExam()">
+                    <span class="menu-icon">⏱️</span>
+                    <div class="menu-title">ミニ模試 (5分)</div>
+                    <div class="menu-desc">10問で実力チェック</div>
+                </div>
+            </div>
+            <div style="margin-top: 20px; text-align: center; color: var(--text-light); font-size: 0.8rem;">
+                <p>現在登録されている問題数: <span id="total-count">0</span>問</p>
+            </div>
+        </div>
+
+        <!-- Quiz -->
+        <div id="screen-quiz" class="screen">
+            <div class="quiz-header">
+                <span id="quiz-progress">1 / 10</span>
+                <span class="tag" id="quiz-category">カテゴリ</span>
+                <span id="quiz-year">2024</span>
+            </div>
+            <div class="question-card" id="question-text"></div>
+            <div class="options-list" id="options-container"></div>
+            <div class="explanation-area" id="explanation-area">
+                <span class="exp-label">解説</span>
+                <p id="explanation-text"></p>
+            </div>
+            <button class="next-btn" id="next-btn" onclick="app.nextQuestion()">次へ進む</button>
+        </div>
+
+        <!-- Result -->
+        <div id="screen-result" class="screen">
+            <div style="text-align: center; margin-top: 40px;">
+                <h2 style="font-size: 2rem; margin-bottom: 20px;">終了!</h2>
+                <div class="menu-card">
+                    <div style="font-size: 3rem; color: var(--primary-color); font-weight: bold;" id="result-score">
+                    </div>
+                    <div style="color: var(--text-light);">正解数</div>
+                </div>
+                <div style="margin-top: 30px;">
+                    <button class="primary-btn" onclick="app.showScreen('screen-home')">ホームへ戻る</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin List -->
+        <div id="screen-admin" class="screen">
+            <h2 style="margin-bottom: 15px;">問題管理</h2>
+            <div class="admin-toolbar">
+                <button onclick="app.showEditForm()">＋ 新規作成</button>
+                <button onclick="app.exportData()">↓ 保存(JSON)</button>
+                <button onclick="document.getElementById('file-input').click()">↑ 読込</button>
+                <input type="file" id="file-input" style="display:none" onchange="app.importData(this)">
+            </div>
+
+            <div style="margin-bottom: 10px;">
+                <button onclick="app.resetToDefault()"
+                    style="font-size:0.8rem; background:none; border:none; text-decoration:underline; color:#999;">初期データに戻す</button>
+            </div>
+
+            <div id="admin-question-list">
+                <!-- JSでリスト生成 -->
+            </div>
+        </div>
+
+        <!-- Admin Edit Form -->
+        <div id="screen-edit" class="screen">
+            <h2 style="margin-bottom: 15px;">問題編集</h2>
+            <div class="edit-form">
+                <input type="hidden" id="edit-id">
+                <div class="form-group">
+                    <label>年度</label>
+                    <input type="text" id="edit-year" placeholder="例: 2024">
+                </div>
+                <div class="form-group">
+                    <label>分野</label>
+                    <select id="edit-category">
+                        <option value="国語">国語</option>
+                        <option value="数学">数学</option>
+                        <option value="英語">英語</option>
+                        <option value="理科">理科</option>
+                        <option value="社会">社会</option>
+                        <option value="一般常識">一般常識</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>問題文</label>
+                    <textarea id="edit-question" rows="4" placeholder="問題文を入力..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>選択肢1 (正解にするものを選択)</label>
+                    <input type="text" id="edit-opt1" placeholder="選択肢1">
+                </div>
+                <div class="form-group">
+                    <label>選択肢2</label>
+                    <input type="text" id="edit-opt2" placeholder="選択肢2">
+                </div>
+                <div class="form-group">
+                    <label>選択肢3</label>
+                    <input type="text" id="edit-opt3" placeholder="選択肢3">
+                </div>
+                <div class="form-group">
+                    <label>選択肢4</label>
+                    <input type="text" id="edit-opt4" placeholder="選択肢4">
+                </div>
+                <div class="form-group">
+                    <label>正解の選択肢</label>
+                    <select id="edit-answer-idx">
+                        <option value="0">選択肢1</option>
+                        <option value="1">選択肢2</option>
+                        <option value="2">選択肢3</option>
+                        <option value="3">選択肢4</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>解説</label>
+                    <textarea id="edit-explanation" rows="3" placeholder="解説を入力..."></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button class="primary-btn" onclick="app.saveQuestion()"
+                        style="background: var(--success-color);">保存</button>
+                    <button class="primary-btn" onclick="app.showScreen('screen-admin')"
+                        style="background: #95a5a6;">キャンセル</button>
+                </div>
+                <div style="margin-top:20px; text-align:center;">
+                    <button onclick="app.deleteQuestion()"
+                        style="color:red; background:none; border:none; text-decoration:underline;">この問題を削除</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav">
+        <div class="nav-item active" onclick="app.showScreen('screen-home')">
+            <span class="nav-icon">🏠</span>
+            ホーム
+        </div>
+        <div class="nav-item" onclick="app.startQuiz('wrong')">
+            <span class="nav-icon">📦</span>
+            復習
+        </div>
+        <div class="nav-item" onclick="app.showScreen('screen-admin')">
+            <span class="nav-icon">✏️</span>
+            編集
+        </div>
+    </nav>
+
+    <script src="mock_data.js"></script>
+    <script src="mock_data_2.js"></script>
+    <script src="mock_data_3.js"></script>
+    <script src="mock_data_4.js"></script>
+    <script src="mock_data_5.js"></script>
+    <script src="mock_data_6.js"></script>
+    <script src="mock_data_7.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
